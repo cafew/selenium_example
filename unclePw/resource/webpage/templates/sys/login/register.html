@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+    <script src="{{static_url('js/jquery-3.3.1.min.js')}}"></script>
+    <script src="{{static_url('js/sys/login/register.js')}}"></script>
+    <script src="{{static_url('js/myJSFuncs.js')}}"></script>
+    <link rel="stylesheet" type="text/css" href="{{static_url('css/sys/login/register.css')}}">
+    <style type="text/css">
+        body{
+            background-image: url("{{static_url('statics/pic/sys/bgp1.jpg')}}");
+        }
+    </style>
+</head>
+<body>
+    <table cellpadding="2px" class="shadow">
+        <tr>
+            <td class="td1">昵称</td>
+            <td class="td2"><input type="text" id="user_name" placeholder="昵称" onkeyup="check_user_name()"/></td>
+            <td id="user_name_td"  class="td3"></td>
+        </tr>
+        <tr>
+            <td  class="td1">登录名</td>
+            <td class="td2"><input type="text" id="login_name" placeholder="登录名" onkeyup="check_login_name()"/></td>
+            <td id="login_name_td" class="td3"></td>
+        </tr>
+        <tr>
+            <td  class="td1">密码</td>
+            <td class="td2"><input type="password" id="pwd" placeholder="密码" onkeyup="check_pwd()"/></td>
+            <td id="pwd_td" class="td3"></td>
+        </tr>
+        <tr>
+            <td  class="td1">再次输入密码</td>
+            <td class="td2"><input type="password" id="repwd" placeholder="再次输入密码" onkeyup="check_repwd()"/></td>
+            <td id="repwd_td" class="td3"></td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="{{static_url('js/jquery-3.3.1.min.js')}}"></script>
+    <script src="{{static_url('js/date_format.js')}}"></script>
+    <script src="{{static_url('js/myJSFuncs.js')}}"></script>
+    <link rel="stylesheet" type="text/css" href="{{static_url('css/sys/login/shadow.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{static_url('css/sys/login/alert.css')}}">
+    <!--<script src="../../js/jquery-3.3.1.min.js"></script>-->
+    <!--<script src="../../js/date_format.js"></script>-->
+    <style type="text/css">
+        td{
+            text-align: center;
+        }
+        html,body{
+            /*background-image: url('{{static_url("statics/pic/sys/bgp1.jpg")}}');*/
+            /*background-image: url("../img/bgp1.jpg");*/
+            width:100%;
+            height:100%;
+        }
+    </style>
+    <script>
+        var inter1=null;
+        function change_left_time(){
+            var class_time=new Date($("#date").val().replace("T"," "))
+            var now_time=new Date()
+            if (class_time>now_time){
+                //console.log("123")
+                $(".left-time").html("剩余"+Math.floor((class_time.getTime()-now_time.getTime())/100)/10+"秒")
+                $(".select").attr("disabled", true)
+            }else{
+                $(".left-time").html("抢报中...")
+                $(".select").attr("disabled", false)
+                setTimeout(function(){$(".select").attr("disabled", true);$(".left-time").html("对不起，该课程已抢完。")},1000)
+                clearInterval(inter1)
+
+            }
+
+        }
+
+        function create_class_list(){
+
+            // alert("123")
+            if ($("#date").val()){
+                // 获取input的设定的日期
+                var class_time=new Date($("#date").val().replace("T"," "))
+                var now_time=new Date()
+                // 进行日期的比较
+                if (class_time<now_time){
+                    alertDiv("抢课时间不可早于当前时间，请重新设定")
+
+                }else{
+                    $("#class_list").show()
+
+                    $("#class_list tbody").html("<tr><td>1</td><td>美术课</td><td style='width: 10%'><button class='select' onclick='select_success()'>抢课</button></td><td><span class='left-time'></span></td></tr>" +
+                                            "<tr><td>2</td><td>计算机课</td><td style='width: 10%'><button class='select' onclick='select_success()'>抢课</button></td><td><span class='left-time'></span></td></tr>" +
+                                            "<tr><td>3</td><td>体育课</td><td style='width: 10%'><button class='select' onclick='select_success()'>抢课</button></td><td><span class='left-time'></span></td></tr>")
+                    change_left_time()
+                    inter1=setInterval("change_left_time()",100)
+                    $("#date").attr("disabled",true)
+                }
+            }else{
+                alertDiv("请先设定抢课时间")
+            }
+
+        }
+        function clear_class_list(){
+            clearInterval(inter1)
+            $("#class_list tbody").html("")
+            $("#date").attr("disabled",false)
+            $("#class_list").hide()
+        }
+        function select_success(){
+            alertDiv("恭喜你，抢课程成功！")
+        }
+        $(document).ready(function() {
+            var now_time=format("yyyy-MM-ddThh:mm",new Date())
+            //var now_time_str=now_time.getFullYear()+"-"+(parseInt(now_time.getMonth())+1)+"-"+now_time.getDate()+"T"+now_time.getHours()+":"+now_time.getMinutes()
+            $("#date").val(now_time)
+            $("#date").onchange=function() {
+                clear_class_list()
+            }
+        })
+    </script>
+</head>
+<body>
+    <h1>测试用抢课页面</h1>
+    <div>
+
+        <label>请选择你设置的课程开抢时间</label>
+        <input id="date"  type="datetime-local"/>
+        <button onclick="create_class_list()">生成抢课列表</button>
+        <button onclick="clear_class_list()">重新设置开抢时间</button>
+    </div>
+    <div>
+        <table id="class_list" style="display: none;width: 1000px" border="1px solid black">
+            <thead>
+                <th width="200px">序号</th>
+                <th width="50%">课程名</th>
+                <th width="30%" colspan="2">操作</th>
+
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
