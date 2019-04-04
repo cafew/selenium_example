@@ -2,6 +2,7 @@
 from python3.common.core.handler.base_handler import BaseHandler
 from python3.modules.sys.service.sys_user_service import SysUserService
 from python3.modules.sys.entity.sys_user import SysUser
+import time
 
 import json
 from uuid import uuid4 as uuid
@@ -33,3 +34,8 @@ class ExitLoginControl(BaseHandler):
     def get(self):
         self.clear_cookie("unclepw_user_id")
         self.redirect("/login")
+
+class TestControl(BaseHandler):
+    def get(self):
+        time.sleep(10)
+        self.write("蹇神🐂🍺")
