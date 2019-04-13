@@ -229,6 +229,209 @@ PS:鉴于各种日期控件比较多，个人使用看来直接使用js对其赋
     
 至于元素的点住，松开，拖动等操作将结合在实际案例的代码中
 
+## 抢课测试流程及对应代码分析
+测试网站可见[开发及测试环境介绍](#开发及测试环境介绍)章节介绍
+
+1.打开对应的测试网站www.uncleyiba.com
+    
+    option = webdriver.ChromeOptions()
+    option.add_argument('disable-infobars')
+    browser = webdriver.Chrome(chrome_options=option)
+    browser.set_window_size(1500, 1000)
+    browser.get("http://www.uncleyiba.com")
+
+其中第二行代码加或者不加的区别仅仅是打开的浏览器会不会显示如图所示的信息:
+
+![6][6]
+
+通过这段代码我们操作成功打开一个1500*1000大小的chrome浏览器并打开了http://www.uncleyiba.com这个网站
+
+2.输入用户名和密码，并点击登陆按钮
+
+    # 填入用户名和密码
+    utils.write_into_input_by_id(browser, "username", "nvshen")
+    utils.write_into_input_by_id(browser, "password", "nvshen")
+    # 执行登陆js
+    js_login = "login()"
+    browser.execute_script(js_login)
+
+这里我们输入了对应的用户名和密码，并且通过执行登陆按钮的js代码实现登录，而并不是通过点击登陆按钮的方式
+
+其中write_into_input_by_id方法具体代码如下:
+
+    def write_into_input_by_id(browser, ele_id, content):
+        ele = browser.find_element_by_id(ele_id)
+        ele.send_keys(content)
+
+找到对应的id的input元素并向其中输入指定的文字
+
+3.等待三秒钟网页跳转，并确保成功跳转
+
+    # 首先我们要根据弹窗结果读取状态，如果是我们想要的状态则继续下一步操作，否则报错
+    login_message_show_return_param = dict()
+    if not utils.while_else_sleep(page_check.login_message_show, {"browser": browser},
+                                  login_message_show_return_param):
+        raise Exception(login_message_show_return_param["message"])
+    time.sleep(3)
+    # 三秒之后会刷新页面，要确保页面是否已经刷新成功，否则报错
+    login_success_return_param = dict()
+    if not utils.while_else_sleep(page_check.login_success, {"browser": browser}, login_success_return_param):
+        raise Exception(login_message_show_return_param["message"])
+        
+在执行页面跳转的时候总会因为网络或其他原因，导致其中的延时时间具有不确定性，
+可能你一个请求发过去是毫秒级响应，也有可能过十几二十秒都没有反应，
+这时候我们需要一个延时等待的机制来尽可能规避这种情况，
+这里是通过写了一个简单的函数while_else_sleep来监控页面的状态，
+从而实现对页面的加载等待。
+    
+    def while_else_sleep(func, param, return_param, false_func=nothing_happened_func, times_begin=0, times_max=20, sleep_time=1):
+        '''
+        :param func:重复执行的方法
+        :param param:func方法携带的参数
+        :param return_param:func方法返回的参数
+        :param false_func:如果func返回结果为false，需要执行的函数
+        :param times_begin:开始的次数
+        :param times_max:最大重复执行次数
+        :param sleep_time:每次等待时间
+        :return:boolean
+        '''
+        times = times_begin
+        while True:
+            #print("{0}:{1}[max:{2}]".format(func, times, times_max))
+            times += 1
+            if func(param, return_param):
+                break
+            else:
+                time.sleep(sleep_time)
+                false_func(param, return_param)
+            if times >= times_max:
+                return False
+            if return_param.get("status", "") == "over":
+                return False
+        return True
+        
+我们通过判定函数func来判定页面是否已经到达了我们预料的状态。
+如果没有，则进行对应的延时等待，并进行重试补救操作false_func。
+当重试超过一定的次数times_max，则判定此次操作是超时的，没有继续重试的必要了。
+当然在确定页面状态的过程中可能会出现一些不再需要重试的情况，比如"密码输入错误"，
+这种情况你再怎么重试密码也依旧是错误的，所以我们会在return_param中加入status判定，
+如果碰到类似于这种情况则直接执行跳出操作，并判定执行失败。
+
+理解了while_else_sleep函数再来看这个部分的整体函数，就很容易理解其含义：
+
+确保弹窗是登陆成功状态，如果是则等待三秒，确认已经登陆成功并跳转到了预期的页面。
+
+4.点击"定时抢课页面"
+    
+    # 找到对应的 定时抢课页面 的a标签
+    select_class_a = browser.find_elements_by_tag_name("li")[0].find_element_by_tag_name("a")
+    select_class_a.click()
+    # 判定子页面是否刷新成功
+    select_class_page_show_return_param = dict()
+    if not utils.while_else_sleep(page_check.select_class_page_show, {"browser": browser},
+                                  select_class_page_show_return_param):
+        raise Exception(select_class_page_show_return_param["message"])
+        
+这里触发了一个点击a标签的事件，实现iframe的跳转，并且通过一个while_else_sleep函数对iframe的页面跳转状态进行了判定
+
+5.切换到对应的iframe进行抢课
+
+    # 切换iframe
+    browser.switch_to.frame(browser.find_element_by_id("child_frame"))
+
+这里仅仅是一个切换frame的操作，除了同标签页面内的frame切换，selenium还可以在同一个浏览器窗口的不同标签之间进行切换
+
+![7][7]
+
+6.根据当前时间设定课程开抢时间，并将这个时间传给对应的时间控件
+    
+    # 设置好开抢时间 如果秒数小于40 那就当前时间，如果秒数大于40，则推迟一分钟
+    second = int(time.strftime('%S', time.localtime(time.time())))
+    time_str = time.strftime('%Y-%m-%dT%H:%M', time.localtime(time.time() + 60))
+    if second >= 40:
+        time_str = time.strftime('%Y-%m-%dT%H:%M', time.localtime(time.time() + 120))
+    # 填入日期
+    utils.write_into_date_by_id(browser, "date", time_str)
+    
+这里我们首先获取了当前时间，并且在当前时间的基础上对课程开抢时间进行了相应的延长，
+这里有一个注意点是我们设定的时间传参格式是`%Y-%m-%dT%H:%M`，原因如图:
+
+![8][8]
+
+我们在获取date控件的样例时间格式的时候获取到的就是这样的格式，
+因此我们再反过来进行赋值的时候要以同样的格式构造对应的时间值。
+不以特定的格式进行赋值则会引发js的错误。
+
+![9][9]
+
+7.点击"生成抢课列表"
+
+    # 点击 生成抢课列表
+    js_create_class_list = "create_class_list()"
+    browser.execute_script(js_create_class_list)
+    # 判定一下是否出现弹窗表示时间选择有误
+    time_error_div_show_return_param = dict()
+    if utils.while_else_sleep(page_check.time_error_div_show, {"browser": browser},
+                              time_error_div_show_return_param, times_max=4):
+        raise Exception(time_error_div_show_return_param["message"])
+    # 判定table是否已经展示出来
+    class_table_show_return_param = dict()
+    if not utils.while_else_sleep(page_check.class_table_show, {"browser": browser}, class_table_show_return_param):
+        raise Exception(class_table_show_return_param["message"])
+        
+这里的点击操作我依旧是采用的执行js的方式，我们可以查看对应的button的代码：
+
+![10][10]
+
+当然可以通过xpath或tag_name的方式获取元素再进行点击，这个因个人的习惯不同选择的方式也不一样。
+
+在进行js执行/按钮点击之后，我增加了一步判定，以免上一步时间设置出错导致抢课列表不能成功生成。
+
+而在确定时间没有出错之后生成抢课列表也是需要一定时间的（当然我这里是js直接生成的写死的列表，
+实际必然是实时向服务器发送请求获取到对应的列表，所以会有一定的请求时间），所以我们进行了延时等待的判定。
+
+8.不停地点击某个课程的"抢课"按钮，直到抢课成功
+
+    # 选择我们需要的课程 例如 计算机课
+    trs = browser.find_element_by_id("class_list").find_element_by_tag_name("tbody").find_elements_by_tag_name("tr")
+    find_flag = False
+    for each_tr in trs:
+        tds = each_tr.find_elements_by_tag_name("td")
+        if tds[1].text == "计算机课":
+            # time.sleep(1)
+            left_time_str = tds[3].text
+            pat_num = "\d+"
+            result_pat = re.findall(pat_num, left_time_str)
+            if len(result_pat) > 0:
+                left_time = int(result_pat[0])
+                click_button_param = {"browser": browser, "button": tds[2].find_element_by_tag_name("button")}
+                click_button_return_param = dict()
+                if not utils.while_else_sleep(page_check.click_button, click_button_param,
+                                              click_button_return_param, times_max=(left_time+3)*10,
+                                              sleep_time=0.1):
+                    raise Exception(click_button_return_param["message"])
+                # 判定抢课是否成功（有无弹窗，弹窗内容）
+                select_fail_message_show_return_param = dict()
+                if not utils.while_else_sleep(page_check.select_fail_div_show, {"browser": browser},
+                                              select_fail_message_show_return_param, times_max=4):
+                    raise Exception(browser.find_element_by_id("class_list").find_element_by_tag_name("tbody").
+                                    find_elements_by_tag_name("tr")[0].find_elements_by_tag_name("td")[3].text)
+            else:
+                raise Exception(tds[3].text)
+            find_flag = True
+            break
+    
+这里我们获取了所有课程的信息，并通过对td内容的判定找到了我们需要的计算机课，进一步找到其抢课按钮。
+
+通过获取了剩余时间，计算出假设我们每秒点击十次的话需要点击多少次
+（超时过多之后的点击可以有但是没必要，反正也抢不到了）     
+
+全部次数试完之后再判定一下是否抢课成功，即识别是否有弹窗以及弹窗的内容是什么      
+            
+
+
+
+
 
 
 
@@ -245,5 +448,15 @@ PS:鉴于各种日期控件比较多，个人使用看来直接使用js对其赋
 [3]:imgs/3.png
 [4]:imgs/4.png
 [5]:imgs/5.png
+[6]:imgs/6.png
+[7]:imgs/7.png
+[8]:imgs/8.png
+[9]:imgs/9.png
+[10]:imgs/10.png
+[11]:imgs/11.png
+[12]:imgs/12.png
+[13]:imgs/13.png
+[14]:imgs/14.png
+
 
 
