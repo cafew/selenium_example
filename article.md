@@ -149,7 +149,7 @@ selenium提供了一系列的方法通过元素的属性定位页面中的具体
 ### selenium元素操作
 `其中browser为浏览器对象`
 
-常见的html元素包括:输入框input,按钮button,复选框checkbox,单选框radio,下拉选择框select,时间选择框date,富文本框textarea以及一些用于显示文本的标签包括不仅限于div、span、p等。
+常见的html元素包括:输入框input,按钮button,复选框checkbox,单选框radio,下拉选择框select,时间选择框date,富文本框textarea,文件选择file以及一些用于显示文本的标签包括不仅限于div、span、p等。
 
 输入框input:
     
@@ -218,6 +218,15 @@ PS:鉴于各种日期控件比较多，个人使用看来直接使用js对其赋
 需要实现对其输入的功能，可使用如下代码:
     
     browser.find_element_by_name("textarea").send_keys("测试文本")
+    
+文件选择file:
+    
+    <input type="file" name="file">
+
+需要实现文件的选择功能，可使用如下代码:
+
+    browser.find_element_by_name("file").send_keys(file_path)
+    
 
 至于其他一些用于显示文本的标签，例如:
 
@@ -427,6 +436,130 @@ PS:鉴于各种日期控件比较多，个人使用看来直接使用js对其赋
 （超时过多之后的点击可以有但是没必要，反正也抢不到了）     
 
 全部次数试完之后再判定一下是否抢课成功，即识别是否有弹窗以及弹窗的内容是什么      
+
+## 表单提交样例
+除了抢课案例外笔者还提供了另一个可供测试的表单提交样例，
+其中包括了更多的元素操作:input填写,select选择,date填写,radio选择,checkout选择,file选取,
+textarea填写,元素拖拽,按钮点击这些事件。
+
+表单提交页面的进入和选课类似，这里不做重复介绍。大多数元素的操作在之前的章节中也有介绍，方法大同小异参考一下源码即可理解。
+
+这里重点提出来的则是元素拖拽的演示。
+
+在表单提交这个案例中笔者增加了一个类似于验证的机制，需要将黑色小方块移动至几乎与红色小方块重合的地步，才可以进行最终的提交。
+
+![11][11]
+
+其中小方块这一段的html代码是这样的：
+    
+    <td colspan="2" id="td1">
+        <div id="div2" style="left: 44.6836px; top: 24.9741px;"></div>
+        <div id="div1" style="left: 342px; top: 593px;"></div>
+    </td>
+    
+    css:
+        #div1{
+            width: 30px;
+            height: 30px;
+            background-color: black;
+            position: absolute;
+        }
+        #div2{
+            width: 30px;
+            height: 30px;
+            background-color: red;
+            position: relative;
+        }
+
+两个小方块都是30*30大小，其中红色方块是可不操作的，其位置在这个td内部随机。
+黑色方块有初始位置，可以进行拖拽移动。
+
+其实现代码如下:
+    
+    # 拖动验证
+    # 1.分别得到两个div的left和top
+    div1 = browser.find_element_by_id("div1")
+    div2 = browser.find_element_by_id("div2")
+    left_div1 = div1.location.get("x")
+    top_div1 = div1.location.get("y")
+    left_div2 = div2.location.get("x")
+    top_div2 = div2.location.get("y")
+    # 2.设置好ActionChains对象用于进行键鼠操作
+    actions = ActionChains(browser)
+    actions.click_and_hold(div1) # a.按住div1
+    actions.move_by_offset(left_div2 - left_div1, top_div2 - top_div1) # b.横纵坐标移动（相对坐标）
+    actions.release() # c.释放鼠标
+    actions.perform() # d.执行动作流
+    
+ActionChains类可以实现对一组"动作"的执行,它有如下的"动作"可以被执行:
+
+![12][12]
+
+包括不仅限于单机，双击，按下，松开，移动等。
+
+这里我们通过计算了两个方块的相对位置，点击并按住小黑方块（div1），
+并将其移动相应的相对距离，再释放鼠标这样的操作，来实现"让小黑方块覆盖小红方块"的验证操作。
+
+## 其他可能进行的操作
+`其中browser为浏览器对象`
+
+###页面截图
+在服务器执行selenium脚本的时候我们无法直观地看到当时浏览器执行的情况，
+因此需要对代码执行异常的地方进行捕获，通过截图的方式来人为分析可能出现的错误。
+    
+    browser.get_screenshot_as_file(screenshot_path)
+    
+    screenshot_path:截图图片存储路劲
+    
+###元素截图
+这一步实际上是基于上一个"页面截图"进一步对图片进行处理，这主要用于验证码的获取，
+大多数网站的验证码并不是一个真实存在的图片文件，而是一个实时生成的临时图片文件。
+因此我们需要通过截图的方式来获取这样的验证码并且利用OCR进行进一步的识别。
+
+    #得到验证码在屏幕中的坐标位置
+    left, top, right, bottom = get_elementid_location(browser, "checkCodeImage")
+    # 浏览器页面截图并存储
+    screenshot_path = os.path.join(conf.data_path, picuniqid + "_screenshot" + ".png")
+    browser.get_screenshot_as_file(screenshot_path)
+    # 存储验证码图
+    captcha_path = os.path.join(conf.data_path, picuniqid + "_captcha" + ".png")
+    im = Image.open(screenshot_path)
+    im = im.crop((left, top, right, bottom))
+    im.save(captcha_path)
+    
+其中get_elementid_location方法是根据元素的location和size方法获取其在屏幕中的坐标
+
+![13][13]
+
+这其中有一个值得关注的问题是retina屏幕的问题
+    
+    所谓“Retina”是一种显示标准，是把更多的像素点压缩至一块屏幕里，从而达到更高的分辨率并提高屏幕显示的细腻程度。
+    由摩托罗拉公司研发。最初该技术是用于Moto Aura上。这种分辨率在正常观看距离下足以使人肉眼无法分辨其中的单独像素。也被称为视网膜显示屏。
+    
+    以MacBook Pro with Retina Display为例，工作时显卡渲染出2880x1800个像素，其中每四个像素一组，输出原来屏幕的一个像素显示的大小区域内的图像。
+    这样一来，用户所看到的图标与文字的大小与原来的1440x900分辨率显示屏相同，但精细度是原来的4倍，但对于特殊元素，如视频与图像，则以一个图片像素对应一个屏幕像素的方式显示。
+    故不会产生Windows中分辨率提升使屏幕文字与图像变小，造成阅读困难的问题。这样在设计软件时只需将所有的UI元素的精细度都提高到原来的4倍就可以既保持了观看舒适度，又提高了显示效果。关于iOS设备，也由四个像素代替原来一个像素，通过下图对比就可以较明显地观察到这种关系。
+
+划重点即`每四个像素一组`
+
+所以如果selenium是在mac的主屏或者说是其他retina屏幕上工作的时候我们需要将其获得的元素坐标乘上2才是其真实的坐标:
+    
+    if is_retina_display(browser):
+        left = int(captcha_location['x'] )*2
+        top = int(captcha_location['y'] )*2
+        right = int(captcha_location['x'] +captcha_size['width'] )*2
+        bottom = int(captcha_location['y'] + captcha_size['height'] )*2
+    else:
+        left = int(captcha_location['x'])
+        top = int(captcha_location['y'])
+        right = int(captcha_location['x'] + captcha_size['width'])
+        bottom = int(captcha_location['y'] + captcha_size['height'])
+        
+得到了屏幕截图和元素位置，通过Image类的操作即可以准确获得想要截图的元素的位置
+
+
+
+
             
 
 
