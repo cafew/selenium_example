@@ -557,6 +557,44 @@ ActionChains类可以实现对一组"动作"的执行,它有如下的"动作"可
         
 得到了屏幕截图和元素位置，通过Image类的操作即可以准确获得想要截图的元素的位置
 
+###屏幕滚动
+这个也是配合截图使用的，因为截图仅仅是截取当前的屏幕，如果页面可以向下滚动或者向上滚动，则被隐藏的部分无法被截图获得
+
+    js_scroll='''$(document).scrollTop({0})'''.format(scroll_num)
+    browser.execute_script(js_scroll)
+    
+其中`scroll_num`即滚动条的位置，0则代表是在最上方
+
+###属性方法介绍
+1.获取元素是否显示、是否可被操作、是否可进行选择
+
+![14][14]
+
+2.获取元素的标签属性，例如获取其name属性
+
+    name = ele.get_attribute("name")
+    
+    ele为元素对象
+    
+3.获取元素的css属性，例如获取其color属性
+
+    color = ele.value_of_css_property("color")
+    
+    ele为元素对象
+
+4.清除元素的值
+    
+    ele.clear()
+    
+    ele为元素对象
+    
+    
+
+
+    
+    
+    
+    
 
 
 
