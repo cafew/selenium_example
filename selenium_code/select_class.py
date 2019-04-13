@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # coding=utf-8
 # author:jingjian@datagrand.com
-# datetime:2019/3/13 上午10:36
+# datetime:2019/3/14 上午11:01
 import os, sys, re, json, traceback, time
 from selenium import webdriver
 from selenium_code import utils, page_check
+from selenium.webdriver import ActionChains
 
 Flase = False
 Ture = True
@@ -47,13 +48,13 @@ if __name__ == "__main__":
         if not utils.while_else_sleep(page_check.select_class_page_show, {"browser": browser},
                                       select_class_page_show_return_param):
             raise Exception(select_class_page_show_return_param["message"])
+        # 切换iframe
+        browser.switch_to.frame(browser.find_element_by_id("child_frame"))
         # 设置好开抢时间 如果秒数小于40 那就当前时间，如果秒数大于40，则推迟一分钟
         second = int(time.strftime('%S', time.localtime(time.time())))
         time_str = time.strftime('%Y-%m-%dT%H:%M', time.localtime(time.time() + 60))
         if second >= 40:
             time_str = time.strftime('%Y-%m-%dT%H:%M', time.localtime(time.time() + 120))
-        # 切换iframe
-        browser.switch_to.frame(browser.find_element_by_id("child_frame"))
         # 填入日期
         utils.write_into_date_by_id(browser, "date", time_str)
         # 点击 生成抢课列表
@@ -96,6 +97,8 @@ if __name__ == "__main__":
                     raise Exception(tds[3].text)
                 find_flag = True
                 break
+
+
     except Exception as e:
         print(e.args[0])
 
