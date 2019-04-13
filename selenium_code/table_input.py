@@ -51,7 +51,7 @@ if __name__ == "__main__":
         browser.switch_to.frame(browser.find_element_by_id("child_frame"))
         # 进行表单填报
         # 姓
-        utils.write_into_input_by_name(browser,"last_name","张")
+        utils.write_into_input_by_name(browser, "last_name", "张")
         # 名
         utils.write_into_input_by_name(browser, "first_name", "三")
         # 性别
@@ -63,13 +63,13 @@ if __name__ == "__main__":
         # 学号
         utils.write_into_input_by_name(browser, "number", "12345678")
         # 是否是少先队员
-        utils.select_radio_by_name(browser, "team", "是", {"0":"是", "1":"否"})
+        utils.select_radio_by_name(browser, "team", "是", {"0": "是", "1": "否"})
         # 是否是三好学生
         utils.select_radio_by_name(browser, "student", "是", {"0": "是", "1": "否"})
         # 是否喝旺仔牛奶
         utils.select_radio_by_name(browser, "milk", "是", {"0": "是", "1": "否"})
         # 问题1
-        utils.select_checkbox_by_name(browser, "q1", "陈运文", {"0":"马云", "1":"陈运文", "2":"马化腾", "3":"李彦宏"})
+        utils.select_checkbox_by_name(browser, "q1", "陈运文", {"0": "马云", "1": "陈运文", "2": "马化腾", "3": "李彦宏"})
         # 问题2
         utils.select_checkbox_by_name(browser, "q2", "纪达麒", {"0": "张建锋", "1": "纪达麒", "2": "熊明华", "3": "李一男"})
         # 问题3
@@ -77,7 +77,8 @@ if __name__ == "__main__":
         # 问题4
         utils.select_checkbox_by_name(browser, "q4", "文本智能处理", {"0": "图像智能处理", "1": "文本智能处理", "2": "语音智能处理", "3": "以上都是"})
         # 问题5
-        utils.select_some_checkbox_by_name(browser, "q5", ["愿意", "愿意", "愿意", "以上都是"], {"0": "愿意", "1": "愿意", "2": "愿意", "3": "以上都是"})
+        utils.select_some_checkbox_by_name(browser, "q5", ["愿意", "愿意", "愿意", "以上都是"],
+                                           {"0": "愿意", "1": "愿意", "2": "愿意", "3": "以上都是"})
         # 文件
         utils.upload_file_by_name(browser, "file", os.path.abspath("test.txt"))
         # 富文本
