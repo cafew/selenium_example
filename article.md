@@ -95,7 +95,7 @@
 笔者提供的测试网址:www.uncleyiba.com
     
     该网址可自行注册，或者使用测试账号nvshen/nvshen
-    因为是沿用的很久之前刚接触tornado时候的代码，所以对tornado的使用有一些误解。
+    因为是沿用的很久之前刚接触tornado时候的代码，所以对tornado的使用有一些误解。[1]
     因此可能导致如果多人使用线上测试环境，会有一些问题出现。
     所以建议可以本地启一套测试环境。
     
@@ -587,6 +587,41 @@ ActionChains类可以实现对一组"动作"的执行,它有如下的"动作"可
     ele.clear()
     
     ele为元素对象
+    
+## 背景后续
+北京时间凌晨五点，我完成了对docker镜像的最终测试，并临时借用了朋友的高宽带服务器部署了自己的服务。
+
+北京时间下午一点零一分，成功抢到了课程。
+
+就像花瓶碎了一样，感觉一切顿时有点索然无味。
+
+当然，以上都是假的。
+
+但那些真的，也不知不觉就这样过去了很多年，却又像就发生在昨天。
+
+而今天，我在达观数据，它就像初生的太阳，你又在哪里？
+
+
+
+## 参考资料
+
+    selenium官网:http://seleniumhq.org/   
+    
+    selenium百度百科:https://baike.baidu.com/item/selenium/18266
+    
+    https://blog.csdn.net/TestingGDR/article/details/81950593
+    以后再有人问你selenium是什么，你就把这篇文章给他
+    
+    [1]:https://mp.weixin.qq.com/s/2RhYd8b38pa_vAx_7DpQhQ
+    前文提及的对tornado误用，这里附上原因
+    
+    
+
+
+
+
+
+    
     
     
 
