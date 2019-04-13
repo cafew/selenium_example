@@ -155,9 +155,9 @@ selenium提供了一系列的方法通过元素的属性定位页面中的具体
     
     <input type="text" id="last_name" name="last_name">
     
-需要实现对其输入的功能，可使用如下代码，实现在其输入框中输入"嬴"字的效果:
+需要实现对其输入的功能，可使用如下代码:
 
-    browser.find_element_by_name("last_name").send_keys("嬴")
+    browser.find_element_by_name("last_name").send_keys("测试文本")
     
 按钮button:
 
@@ -206,12 +206,30 @@ selenium提供了一系列的方法通过元素的属性定位页面中的具体
     
 需要实现对其时间的输入，可使用如下代码:
     
+    js_input = '''$("input[name={0}]").val("{1}")'''.format("birthday", "2000-01-01")
+    browser.execute_script(js_input)
     
+PS:鉴于各种日期控件比较多，个人使用看来直接使用js对其赋值是一种比较方便的方式
 
-
-
-富文本框textarea
+富文本框textarea:
     
+    <textarea name="textarea"></textarea>
+    
+需要实现对其输入的功能，可使用如下代码:
+    
+    browser.find_element_by_name("textarea").send_keys("测试文本")
+
+至于其他一些用于显示文本的标签，例如:
+
+    <span id="name">嬴政</span>
+    
+需要实现对其文本内容的获取，可使用如下代码:
+    
+    text = browser.find_element_by_id("name").text
+    
+至于元素的点住，松开，拖动等操作将结合在实际案例的代码中
+
+
 
 
 
